@@ -128,20 +128,47 @@ void MyWindow::videTableUtilisateurs()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MyWindow::on_pushButtonLogin_clicked()
 {
-  // Récupération nom et mot de passe
-  char nom[20],motDePasse[20];
-  int nouvelUtilisateur;
-  strcpy(nom,getNom());
-  strcpy(motDePasse,getMotDePasse());
-  nouvelUtilisateur = isNouveauChecked();
+    const char* nom = getNom();
+    const char* mdp = getMotDePasse();
+    int nouveau = isNouveauChecked();
 
-  // TO DO
-  printf("Clic sur bouton LOGIN : --%s--%s--%d--\n",nom,motDePasse,nouvelUtilisateur);
+    int position = estPresent(nom);
+
+    if (nouveau == 1) { // Cas 1 : On veut créer un nouvel utilisateur
+        if (position > 0) {
+            setResultat("Utilisateur déjà existant !");
+        } else {
+            ajouteUtilisateur(nom, mdp);
+            setResultat("Nouvel utilisateur créé : bienvenue !");
+        }
+    } else { // Cas 2 : On veut se connecter à un compte existant
+        if (position > 0) {
+            int verif = verifieMotDePasse(position, mdp);
+            if (verif == 1) {
+                setResultat("Re-bonjour cher utilisateur !");
+            } else {
+                setResultat("Mot de passe incorrect...");
+            }
+        } else {
+            setResultat("Utilisateur inconnu...");
+        }
+    }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MyWindow::on_pushButtonAfficheFichier_clicked()
 {
-  // TO DO
-  printf("Clic sur bouton AFFICHER\n");
+    // 1. On vide la table avant de la remplir
+    videTableUtilisateurs();
+
+    // 2. On crée un tableau suffisamment grand pour accueillir les données
+    UTILISATEUR utilisateurs[100]; 
+
+    // 3. On récupère les utilisateurs depuis le fichier
+    int nbUtilisateurs = listeUtilisateurs(utilisateurs);
+
+    // 4. On ajoute chaque utilisateur trouvé dans la table graphique
+    for (int i = 0; i < nbUtilisateurs; i++) {
+        ajouteTupleTableUtilisateurs(utilisateurs[i].nom, utilisateurs[i].hash);
+    }
 }
